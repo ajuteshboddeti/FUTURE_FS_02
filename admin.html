@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — LeadFlow CRM</title>
+  <meta name="description" content="Admin lead pipeline, status management, and live activity tracking.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <a href="index.html" class="nav-brand">
+      <div class="brand-icon">L</div>
+      <span>LeadFlow</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link">Public Form</a>
+      <a href="admin.html" class="nav-link active">
+        Admin Portal <span class="nav-badge">Staff</span>
+      </a>
+      <button id="logoutBtn" class="btn-secondary" style="display: none; padding: 0.35rem 0.8rem; font-size: 0.8rem;">
+        Log Out
+      </button>
+    </nav>
+  </header>
+
+  <!-- Auth Key Prompt Overlay (shown if key not provided or invalid) -->
+  <div id="authModal" class="auth-overlay active">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <div class="auth-icon-badge">🔒</div>
+      <h2 id="authTitle" style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.4rem;">Admin Access</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Please enter the <code style="font-family: var(--font-mono); color: var(--primary);">ADMIN_KEY</code> to access lead records.
+      </p>
+
+      <div id="authError" class="alert-box alert-error" style="display: none; margin-bottom: 1.25rem;">
+        <span class="alert-icon">⚠️</span>
+        <span id="authErrorMsg">Invalid admin key</span>
+      </div>
+
+      <form id="authForm">
+        <div class="form-group">
+          <label for="adminKeyInput" class="form-label">Secret Key</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input 
+              type="password" 
+              id="adminKeyInput" 
+              class="form-input" 
+              placeholder="Enter ADMIN_KEY (e.g. supersecret123)" 
+              autocomplete="current-password"
+              style="padding-right: 2.75rem;"
+              required
+            >
+            <button 
+              type="button" 
+              id="toggleKeyVisibility" 
+              style="position: absolute; right: 0.75rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 0.2rem; display: flex; align-items: center; justify-content: center;" 
+              aria-label="Toggle password visibility"
+              title="Show/hide key"
+            >👁️</button>
+          </div>
+        </div>
+        <button type="submit" id="authSubmitBtn" class="btn-submit">
+          <span id="authSubmitBtnText">Unlock Dashboard</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Admin Dashboard Content -->
+  <main class="admin-container">
+    <div class="admin-header">
+      <div class="admin-title-area">
+        <h1>Lead Pipeline</h1>
+        <p>Manage, qualify, and track incoming inquiries in real-time.</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <button id="deleteCompletedBtn" class="btn-danger" title="Permanently delete all completed/closed leads" disabled>
+          🗑️ Clear Completed (<span id="btnClosedCount">0</span>)
+        </button>
+        <button id="refreshBtn" class="btn-secondary">
+          🔄 Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Action Banner for Feedback -->
+    <div id="actionBanner" class="alert-box" style="display: none; margin-bottom: 1.5rem;">
+      <span class="alert-icon" id="actionBannerIcon">✓</span>
+      <span id="actionBannerMsg">Action completed successfully.</span>
+    </div>
+
+    <!-- Live Status Counts at Top -->
+    <section class="stats-grid" aria-label="Lead status counts">
+      <div class="stat-card stat-total active-filter" data-status="all" id="cardStatAll">
+        <span class="stat-label">Total Leads</span>
+        <span class="stat-count" id="countAll">0</span>
+      </div>
+      <div class="stat-card stat-new" data-status="new" id="cardStatNew">
+        <span class="stat-label">New</span>
+        <span class="stat-count" id="countNew">0</span>
+      </div>
+      <div class="stat-card stat-contacted" data-status="contacted" id="cardStatContacted">
+        <span class="stat-label">Contacted</span>
+        <span class="stat-count" id="countContacted">0</span>
+      </div>
+      <div class="stat-card stat-qualified" data-status="qualified" id="cardStatQualified">
+        <span class="stat-label">Qualified</span>
+        <span class="stat-count" id="countQualified">0</span>
+      </div>
+      <div class="stat-card stat-closed" data-status="closed" id="cardStatClosed">
+        <span class="stat-label">Closed</span>
+        <span class="stat-count" id="countClosed">0</span>
+      </div>
+    </section>
+
+    <!-- Toolbar: Search and Filter -->
+    <section class="toolbar-card">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="search-input" 
+          placeholder="Filter by name, email, or message..."
+          aria-label="Filter leads"
+        >
+      </div>
+
+      <div class="filter-actions">
+        <label for="statusFilter" class="form-label" style="margin: 0; white-space: nowrap;">Filter Status:</label>
+        <select id="statusFilter" class="status-filter-select" aria-label="Filter by status">
+          <option value="all">All Statuses</option>
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="qualified">Qualified</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Leads Table Card -->
+    <section class="table-card">
+      <div class="table-responsive">
+        <table class="leads-table" id="leadsTable">
+          <thead>
+            <tr>
+              <th style="width: 70px;">ID</th>
+              <th style="width: 150px;">Date & Time</th>
+              <th style="width: 180px;">Name</th>
+              <th style="width: 220px;">Email</th>
+              <th>Message</th>
+              <th style="width: 170px;">Status</th>
+              <th style="width: 80px; text-align: center;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTableBody">
+            <!-- Dynamically populated rows using textContent for security -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">📭</div>
+        <h3 style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 0.35rem;">No leads found</h3>
+        <p id="emptyStateMsg">No contact submissions match the current filter or search criteria.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Delete Confirmation Modal Dialog -->
+  <div id="confirmModal" class="auth-overlay">
+    <div class="auth-modal" style="max-width: 420px; text-align: center;" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="auth-icon-badge" style="margin: 0 auto 1.25rem; background: var(--danger-bg); border-color: rgba(239, 68, 68, 0.3); color: var(--danger);">🗑️</div>
+      <h2 id="confirmTitle" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem;">Confirm Delete</h2>
+      <p id="confirmMessage" style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.5rem; line-height: 1.5;">
+        Are you sure you want to delete this lead? This action cannot be undone.
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: center;">
+        <button id="cancelConfirmBtn" type="button" class="btn-secondary" style="flex: 1; justify-content: center;">Cancel</button>
+        <button id="okConfirmBtn" type="button" class="btn-danger" style="flex: 1; justify-content: center; background: #ef4444; color: white;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2026 LeadFlow CRM. Admin API authenticated via <code style="font-family: var(--font-mono);">x-admin-key</code>.</p>
+  </footer>
+
+  <script src="admin.js"></script>
+</body>
+</html>

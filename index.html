@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — LeadFlow CRM</title>
+  <meta name="description" content="Get in touch with our team. Every inquiry is tracked and promptly addressed.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <a href="index.html" class="nav-brand">
+      <div class="brand-icon">L</div>
+      <span>LeadFlow</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-link active">Contact</a>
+      <a href="admin.html" class="nav-link">
+        Admin Portal <span class="nav-badge">Staff</span>
+      </a>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <section class="form-card" aria-labelledby="form-heading">
+      <div class="form-header">
+        <span class="tag-badge">Direct Line</span>
+        <h1 id="form-heading" class="form-title">Send us a message</h1>
+        <p class="form-subtitle">Have a question or looking to work together? Fill out the form below and we'll reply shortly.</p>
+      </div>
+
+      <!-- Live Status / Notification Alert -->
+      <div id="alertBox" class="alert-box" role="alert" aria-live="polite">
+        <span id="alertIcon" class="alert-icon"></span>
+        <span id="alertMessage"></span>
+      </div>
+
+      <!-- Contact Form -->
+      <form id="contactForm" novalidate>
+        <!-- Honeypot anti-spam field (hidden from real users) -->
+        <div class="hp-field" aria-hidden="true">
+          <label for="honeypot">Leave this empty</label>
+          <input type="text" id="honeypot" name="_gotcha" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="nameInput" class="form-label">Full Name <span style="color: var(--danger)">*</span></label>
+          <input 
+            type="text" 
+            id="nameInput" 
+            name="name" 
+            class="form-input" 
+            placeholder="e.g. Alex Rivera" 
+            required 
+            autocomplete="name"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="emailInput" class="form-label">Email Address <span style="color: var(--danger)">*</span></label>
+          <input 
+            type="email" 
+            id="emailInput" 
+            name="email" 
+            class="form-input" 
+            placeholder="alex@company.com" 
+            required 
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="messageInput" class="form-label">Message</label>
+          <textarea 
+            id="messageInput" 
+            name="message" 
+            class="form-textarea" 
+            placeholder="Tell us what you are looking for..."
+          ></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-submit">
+          <span id="btnText">Send Inquiry</span>
+          <span id="btnSpinner" style="display: none;">⏳ Sending...</span>
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 LeadFlow CRM. All inquiries logged to SQLite database securely.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
